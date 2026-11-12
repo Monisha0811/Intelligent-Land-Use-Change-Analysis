@@ -200,14 +200,36 @@ const confidence2025 = L.imageOverlay(
     { opacity: 0.65 }
 );
 
-// Classification and confidence layers
+// Hotspot overlays
+const hotspot2018_2022 = L.imageOverlay(
+    '/hotspot-overlay/2018-2022',
+    mapBounds,
+    { opacity: 0.65 }
+);
+
+const hotspot2022_2025 = L.imageOverlay(
+    '/hotspot-overlay/2022-2025',
+    mapBounds,
+    { opacity: 0.65 }
+);
+
+const hotspot2018_2025 = L.imageOverlay(
+    '/hotspot-overlay/2018-2025',
+    mapBounds,
+    { opacity: 0.65 }
+);
+
+// Classification, confidence, and hotspot layers
 const overlayMaps = {
     "Land Use Classification 2018": classification2018,
     "Land Use Classification 2022": classification2022,
     "Land Use Classification 2025": classification2025,
     "Model Confidence 2018": confidence2018,
     "Model Confidence 2022": confidence2022,
-    "Model Confidence 2025": confidence2025
+    "Model Confidence 2025": confidence2025,
+    "Change Hotspots 2018-2022": hotspot2018_2022,
+    "Change Hotspots 2022-2025": hotspot2022_2025,
+    "Change Hotspots 2018-2025": hotspot2018_2025
 };
 
 
@@ -320,6 +342,12 @@ document.getElementById('searchButton').addEventListener('click', function() {
          confidence2025
      ].some(layer => map.hasLayer(layer));
 
+     const hotspotActive = [
+         hotspot2018_2022,
+         hotspot2022_2025,
+         hotspot2018_2025
+     ].some(layer => map.hasLayer(layer));
+
      if (confidenceActive) {
          this._div.innerHTML = `
              <div style="
@@ -331,7 +359,7 @@ document.getElementById('searchButton').addEventListener('click', function() {
                  min-width: 200px;
              ">
                  <strong>Model Confidence</strong><br>
-                 <small>Probability assigned to the predicted class</small>
+                 <small>Probability assigned to predicted class</small>
                  <br><br>
 
                  <div>
@@ -348,6 +376,26 @@ document.getElementById('searchButton').addEventListener('click', function() {
                      <span style="display:inline-block;width:18px;height:18px;background:#23a04b;margin-right:8px;"></span>
                      High (≥80%)
                  </div>
+             </div>
+         `;
+     } else if (hotspotActive) {
+         this._div.innerHTML = `
+             <div style="
+                 background: white;
+                 padding: 12px;
+                 border-radius: 6px;
+                 box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                 font-size: 14px;
+                 min-width: 210px;
+             ">
+                 <strong>Change Hotspots</strong><br>
+                 <small>Relative change density</small>
+                 <br><br>
+
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#41b6c4;margin-right:8px;"></span>Low (&lt;25)</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#fecc5c;margin-right:8px;"></span>Moderate (25–50)</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#fd8d3c;margin-right:8px;"></span>High (50–75)</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#e31a1c;margin-right:8px;"></span>Very High (≥75)</div>
              </div>
          `;
      } else {
@@ -392,7 +440,7 @@ opacityControl.onAdd = function(map) {
             box-shadow: 0 1px 5px rgba(0,0,0,0.4);
             width: 220px;
         ">
-            <strong>Classification Opacity</strong>
+            <strong>Layer Opacity</strong>
             <br>
 
             <input
@@ -418,15 +466,19 @@ opacityControl.onAdd = function(map) {
 
 opacityControl.addTo(map);
 
-
-// Change opacity of active classification layer
+// Change opacity of active overlay layers
 document.getElementById('opacitySlider').addEventListener('input', function() {
-
     const opacity = parseFloat(this.value);
 
-    classification2018.setOpacity(opacity);
-    classification2022.setOpacity(opacity);
-    classification2025.setOpacity(opacity);
+    [
+        classification2018, classification2022, classification2025,
+        confidence2018, confidence2022, confidence2025,
+        hotspot2018_2022, hotspot2022_2025, hotspot2018_2025
+    ].forEach(layer => {
+        if (layer && layer.setOpacity) {
+            layer.setOpacity(opacity);
+        }
+    });
 
     document.getElementById('opacityValue').textContent =
         Math.round(opacity * 100) + '%';

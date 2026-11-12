@@ -43,6 +43,13 @@ if not CROP_MODEL_PATH.exists() and (MODEL_DIR / "crop_classifier_2022.joblib").
 BOUNDARY_GPKG = BOUNDARY_DIR / "mangaluru_taluk.gpkg"
 BOUNDARY_GEOJSON = BOUNDARY_DIR / "mangaluru_taluk.geojson"
 
+CONFIDENCE_DIR = RESULTS_DIR / "confidence"
+RELIABILITY_DIR = RESULTS_DIR / "reliability"
+HOTSPOTS_DIR = RESULTS_DIR / "hotspots"
+TRAJECTORIES_DIR = RESULTS_DIR / "trajectories"
+AGRICULTURE_ANALYSIS_DIR = RESULTS_DIR / "agriculture_analysis"
+BUILTUP_ANALYSIS_DIR = RESULTS_DIR / "builtup_analysis"
+
 
 # ============================================================
 # LOAD .env FILE (Standard library, zero-dependency)

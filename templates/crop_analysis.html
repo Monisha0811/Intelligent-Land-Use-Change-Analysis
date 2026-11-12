@@ -202,6 +202,16 @@ validated across the mapped area. Model probabilities indicate prediction
 confidence, not verified classification accuracy.
         </div>
 
+        <div style="background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <span style="font-weight: bold; color: #173b35;">Export Results ({{ selected_year or 2022 }}):</span>
+            <a href="/export/raster/crop/{{ selected_year or 2022 }}" style="background: #173b35; color: white; padding: 7px 14px; border-radius: 6px; text-decoration: none; font-size: 14px;">
+                Download Crop GeoTIFF
+            </a>
+            <a href="/export/csv/crop/crop_area_statistics_{{ selected_year or 2022 }}_experimental.csv" style="background: #e4e9ef; color: #243247; padding: 7px 14px; border-radius: 6px; text-decoration: none; font-size: 14px;">
+                Export Statistics CSV
+            </a>
+        </div>
+
         <h2 class="section-title">Crop area summary</h2>
 
         <div class="summary-grid">

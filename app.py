@@ -8,6 +8,7 @@ from src.services.satellite_service import satellite_service
 from src.services.lulc_service import lulc_service
 from src.services.change_service import change_service
 from src.services.crop_service import crop_service
+from src.services.analytics_service import analytics_service
 
 app = Flask(__name__)
 
@@ -135,13 +136,31 @@ def change_analysis():
 
             area = load_csv(area_csv)
             transition = load_csv(transition_csv)
+
+            # Dynamic hotspot stats
+            hotspot_csv = os.path.join("data", "results", "hotspots", f"change_hotspot_statistics_{y1}_{y2}.csv")
+            if not os.path.exists(os.path.join(BASE_DIR, hotspot_csv)):
+                try:
+                    analytics_service.detect_hotspots(y1, y2)
+                except Exception as e:
+                    print(f"Notice: Dynamic hotspot detection deferred: {e}")
+            hotspot = load_csv(hotspot_csv)
+
+            # Dynamic reliability stats
+            reliability_csv = os.path.join("data", "results", "reliability", f"overall_reliability_{y1}_{y2}.csv")
+            if not os.path.exists(os.path.join(BASE_DIR, reliability_csv)):
+                try:
+                    analytics_service.analyze_reliability(y1, y2)
+                except Exception as e:
+                    print(f"Notice: Dynamic reliability analysis deferred: {e}")
+            reliability = load_csv(reliability_csv)
         else:
             area = pd.DataFrame()
             transition = pd.DataFrame()
+            hotspot = pd.DataFrame()
+            reliability = pd.DataFrame()
 
         intensity = pd.DataFrame()
-        hotspot = pd.DataFrame()
-        reliability = pd.DataFrame()
 
     return render_template(
         "change_analysis.html",
@@ -298,14 +317,37 @@ def land_use_overlay(year):
 
 @app.route("/confidence-overlay/<int:year>")
 def confidence_overlay(year):
-    if year not in [2018, 2022, 2025]:
-        return "Unsupported year", 404
-
     filename = f"confidence_overlay_{year}.png"
     filepath = os.path.join(MAPS_DIR, filename)
 
     if not os.path.exists(filepath):
-        return f"Confidence overlay for {year} not found", 404
+        cls_path = os.path.join(CLASSIFIED_DIR, f"land_use_{year}.tif")
+        if os.path.exists(cls_path):
+            try:
+                analytics_service.calculate_confidence(year)
+            except Exception as e:
+                return f"Confidence overlay error for {year}: {e}", 404
+        else:
+            return f"Confidence overlay for {year} not found", 404
+
+    return send_from_directory(MAPS_DIR, filename)
+
+
+@app.route("/hotspot-overlay/<period>")
+def hotspot_overlay(period):
+    period_norm = period.replace("-", "_")
+    filename = f"hotspot_overlay_{period_norm}.png"
+    filepath = os.path.join(MAPS_DIR, filename)
+
+    if not os.path.exists(filepath):
+        if "_" in period_norm:
+            y1, y2 = period_norm.split("_", 1)
+            try:
+                analytics_service.detect_hotspots(y1, y2)
+            except Exception as e:
+                return f"Hotspot overlay error for {period}: {e}", 404
+        else:
+            return f"Hotspot overlay for {period} not found", 404
 
     return send_from_directory(MAPS_DIR, filename)
 
@@ -851,6 +893,255 @@ def api_crop_compare():
             "success": False,
             "error": str(e)
         }), 500
+
+
+# =========================================================
+# Phase 6 & 7: Spatial Analytics APIs & Exports
+# =========================================================
+
+@app.route("/api/analytics/confidence", methods=["POST"])
+def api_analytics_confidence():
+    """Submit background job to calculate LULC prediction confidence."""
+    data = request.get_json(silent=True) or {}
+    year = data.get("year")
+
+    if not year:
+        return jsonify({
+            "success": False,
+            "error": "'year' parameter is required."
+        }), 400
+
+    job_id = job_manager.submit_job(
+        job_type="confidence_analysis",
+        target_func=analytics_service.calculate_confidence,
+        year=year,
+        description=f"LULC Prediction Confidence for {year}"
+    )
+
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "message": f"Confidence analysis job submitted for year {year}."
+    }), 202
+
+
+@app.route("/api/analytics/hotspots", methods=["POST"])
+def api_analytics_hotspots():
+    """Submit background job to detect change density hotspots between two years."""
+    data = request.get_json(silent=True) or {}
+    y1 = data.get("start_year") or data.get("year1")
+    y2 = data.get("end_year") or data.get("year2")
+    period = data.get("period")
+
+    if period and "-" in str(period):
+        parts = str(period).split("-", 1)
+        y1, y2 = parts[0], parts[1]
+
+    if not y1 or not y2:
+        return jsonify({
+            "success": False,
+            "error": "Both 'start_year' and 'end_year' (or 'period') are required."
+        }), 400
+
+    job_id = job_manager.submit_job(
+        job_type="hotspot_detection",
+        target_func=analytics_service.detect_hotspots,
+        year1=y1,
+        year2=y2,
+        description=f"Change Hotspot Detection for {y1}-{y2}"
+    )
+
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "message": f"Hotspot detection job submitted for period {y1}-{y2}."
+    }), 202
+
+
+@app.route("/api/analytics/trajectories", methods=["POST"])
+def api_analytics_trajectories():
+    """Submit background job to analyze 3-year land use trajectories."""
+    data = request.get_json(silent=True) or {}
+    years = data.get("years", [2018, 2022, 2025])
+
+    job_id = job_manager.submit_job(
+        job_type="trajectory_analysis",
+        target_func=analytics_service.analyze_trajectories,
+        years=years,
+        description=f"Multi-Temporal Trajectory Analysis for {years}"
+    )
+
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "message": f"Trajectory analysis job submitted for years {years}."
+    }), 202
+
+
+@app.route("/api/analytics/fragmentation", methods=["POST"])
+def api_analytics_fragmentation():
+    """Submit background job to compute landscape patch fragmentation metrics."""
+    data = request.get_json(silent=True) or {}
+    year = data.get("year")
+    class_id = data.get("class_id", 3)
+
+    job_id = job_manager.submit_job(
+        job_type="fragmentation_analysis",
+        target_func=analytics_service.analyze_fragmentation,
+        year=year,
+        class_id=int(class_id),
+        description=f"Landscape Fragmentation Analysis (Class {class_id})"
+    )
+
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "message": f"Fragmentation analysis job submitted for Class {class_id}."
+    }), 202
+
+
+@app.route("/api/analytics/reliability", methods=["POST"])
+def api_analytics_reliability():
+    """Submit background job to evaluate transition reliability between two years."""
+    data = request.get_json(silent=True) or {}
+    y1 = data.get("start_year") or data.get("year1")
+    y2 = data.get("end_year") or data.get("year2")
+    period = data.get("period")
+
+    if period and "-" in str(period):
+        parts = str(period).split("-", 1)
+        y1, y2 = parts[0], parts[1]
+
+    if not y1 or not y2:
+        return jsonify({
+            "success": False,
+            "error": "Both 'start_year' and 'end_year' (or 'period') are required."
+        }), 400
+
+    job_id = job_manager.submit_job(
+        job_type="reliability_analysis",
+        target_func=analytics_service.analyze_reliability,
+        year1=y1,
+        year2=y2,
+        description=f"Transition Reliability Analysis for {y1}-{y2}"
+    )
+
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "message": f"Reliability analysis job submitted for {y1}-{y2}."
+    }), 202
+
+
+@app.route("/api/analytics/stats")
+def api_analytics_stats():
+    """Query precomputed spatial analytics statistics."""
+    analytics_type = request.args.get("type", "confidence")
+    year = request.args.get("year")
+    period = request.args.get("period")
+
+    if analytics_type == "confidence":
+        if not year:
+            return jsonify({"success": False, "error": "'year' required for confidence stats."}), 400
+        stats = analytics_service.get_confidence_stats(year)
+        return jsonify({"success": True, "type": "confidence", "year": year, "data": stats})
+    elif analytics_type == "hotspots":
+        if not period:
+            return jsonify({"success": False, "error": "'period' required for hotspot stats."}), 400
+        stats = analytics_service.get_hotspot_stats(period)
+        return jsonify({"success": True, "type": "hotspots", "period": period, "data": stats})
+    elif analytics_type == "reliability":
+        if not period:
+            return jsonify({"success": False, "error": "'period' required for reliability stats."}), 400
+        stats = analytics_service.get_reliability_stats(period)
+        return jsonify({"success": True, "type": "reliability", "period": period, "data": stats})
+    else:
+        return jsonify({"success": False, "error": f"Unknown analytics type '{analytics_type}'"}), 400
+
+
+# =========================================================
+# Result Exports & File Downloads
+# =========================================================
+
+@app.route("/export/raster/classified/<int:year>")
+def export_classified_raster(year):
+    """Download classified LULC GeoTIFF."""
+    filename = f"land_use_{year}.tif"
+    filepath = os.path.join(CLASSIFIED_DIR, filename)
+    if not os.path.exists(filepath):
+        return f"Classified raster for {year} not found", 404
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route("/export/raster/change/<period>")
+def export_change_raster(period):
+    """Download land use change GeoTIFF."""
+    period_norm = period.replace("-", "_")
+    filename = f"change_{period_norm}.tif"
+    filepath = os.path.join(BASE_DIR, "data", "change_maps", filename)
+    if not os.path.exists(filepath):
+        return f"Change raster for {period} not found", 404
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route("/export/raster/crop/<int:year>")
+def export_crop_raster(year):
+    """Download crop classification GeoTIFF."""
+    filename = f"crop_{year}_experimental.tif"
+    filepath = os.path.join(CLASSIFIED_DIR, filename)
+    if not os.path.exists(filepath):
+        fallback = os.path.join(CLASSIFIED_DIR, f"crop_{year}.tif")
+        if os.path.exists(fallback):
+            return send_file(fallback, as_attachment=True, download_name=f"crop_{year}.tif")
+        return f"Crop raster for {year} not found", 404
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route("/export/raster/confidence/<int:year>")
+def export_confidence_raster(year):
+    """Download prediction confidence GeoTIFF."""
+    filename = f"lulc_confidence_{year}.tif"
+    filepath = os.path.join(BASE_DIR, "data", "results", "confidence", filename)
+    if not os.path.exists(filepath):
+        return f"Confidence raster for {year} not found", 404
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route("/export/raster/hotspot/<period>")
+def export_hotspot_raster(period):
+    """Download change hotspot class GeoTIFF."""
+    period_norm = period.replace("-", "_")
+    filename = f"change_hotspot_class_{period_norm}.tif"
+    filepath = os.path.join(BASE_DIR, "data", "results", "hotspots", filename)
+    if not os.path.exists(filepath):
+        return f"Hotspot raster for {period} not found", 404
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+
+@app.route("/export/csv/<path:category>/<path:filename>")
+def export_csv(category, filename):
+    """Download analysis results as CSV with safe category whitelisting."""
+    allowed_dirs = {
+        "results": os.path.join(BASE_DIR, "data", "results"),
+        "confidence": os.path.join(BASE_DIR, "data", "results", "confidence"),
+        "hotspots": os.path.join(BASE_DIR, "data", "results", "hotspots"),
+        "trajectories": os.path.join(BASE_DIR, "data", "results", "trajectories"),
+        "agriculture": os.path.join(BASE_DIR, "data", "results", "agriculture_analysis"),
+        "builtup": os.path.join(BASE_DIR, "data", "results", "builtup_analysis"),
+        "crop": os.path.join(BASE_DIR, "data", "results", "crop_reference"),
+        "change_maps": os.path.join(BASE_DIR, "data", "change_maps"),
+        "model_evaluation": os.path.join(BASE_DIR, "data", "results", "model_evaluation"),
+    }
+    if category not in allowed_dirs:
+        return "Invalid export category", 400
+
+    safe_dir = allowed_dirs[category]
+    base_name = os.path.basename(filename)
+    filepath = os.path.join(safe_dir, base_name)
+    if not os.path.exists(filepath):
+        return f"CSV file '{base_name}' not found in {category}", 404
+
+    return send_file(filepath, as_attachment=True, download_name=base_name)
 
 
 if __name__ == "__main__":

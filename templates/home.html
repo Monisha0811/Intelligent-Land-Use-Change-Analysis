@@ -312,9 +312,17 @@
                     </p>
                     {% endif %}
 
-                    <a href="/statistics" class="btn btn-outline-primary mt-2">
-                        View Detailed Statistics
-                    </a>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <a href="/statistics" class="btn btn-primary btn-sm">
+                            View Detailed Statistics
+                        </a>
+                        <a href="/export/raster/classified/{{ selected_year }}" class="btn btn-outline-success btn-sm">
+                            Download GeoTIFF ({{ selected_year }})
+                        </a>
+                        <a href="/export/csv/results/land_use_area_statistics.csv" class="btn btn-outline-secondary btn-sm">
+                            Export Area CSV
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

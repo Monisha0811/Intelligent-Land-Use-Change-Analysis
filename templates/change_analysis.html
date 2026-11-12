@@ -140,6 +140,25 @@
 
         </select>
 
+        <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
+            <span class="align-self-center text-muted me-2 small"><strong>Exports ({{ selected_period }}):</strong></span>
+            <a href="/export/raster/change/{{ selected_period }}" class="btn btn-sm btn-outline-primary">
+                Download Change GeoTIFF
+            </a>
+            <a href="/export/raster/hotspot/{{ selected_period }}" class="btn btn-sm btn-outline-info">
+                Download Hotspot GeoTIFF
+            </a>
+            <a href="/export/csv/results/transition_details_{{ selected_period.replace('-', '_') }}.csv" class="btn btn-sm btn-outline-secondary">
+                Transitions CSV
+            </a>
+            <a href="/export/csv/hotspots/change_hotspot_statistics_{{ selected_period.replace('-', '_') }}.csv" class="btn btn-sm btn-outline-secondary">
+                Hotspots CSV
+            </a>
+            <a href="/export/csv/reliability/overall_reliability_{{ selected_period.replace('-', '_') }}.csv" class="btn btn-sm btn-outline-secondary">
+                Reliability CSV
+            </a>
+        </div>
+
     </div>
 
 
@@ -363,13 +382,13 @@
 
                     <tr>
 
-                        <td>{{ row["Period"] }}</td>
+                        <td>{{ row.get("Period", selected_period) }}</td>
 
-                        <td>{{ row["Reliability"] }}</td>
+                        <td>{{ row.get("Reliability", "") }}</td>
 
-                        <td>{{ "{:,.0f}".format(row["Changed Pixels"]) }}</td>
+                        <td>{{ "{:,.0f}".format(row.get("Changed Pixels", row.get("Pixels", 0))) }}</td>
 
-                        <td>{{ "%.2f"|format(row["Percentage"]) }}%</td>
+                        <td>{{ "%.2f"|format(row.get("Percentage", 0)) }}%</td>
 
                     </tr>
 

@@ -100,9 +100,14 @@
 
     <div class="card p-4">
 
-        <h4 class="section-title">
-            Land Use / Land Cover Area Statistics
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="section-title mb-0">
+                Land Use / Land Cover Area Statistics
+            </h4>
+            <a href="/export/csv/results/land_use_area_statistics.csv" class="btn btn-sm btn-outline-primary">
+                Download CSV
+            </a>
+        </div>
 
         <p>
             Classified area for each land-use category across
@@ -144,9 +149,14 @@
 
     <div class="card p-4">
 
-        <h4 class="section-title">
-            Classification Confidence by Class
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="section-title mb-0">
+                Classification Confidence by Class
+            </h4>
+            <a href="/export/csv/confidence/confidence_by_class.csv" class="btn btn-sm btn-outline-primary">
+                Download CSV
+            </a>
+        </div>
 
         <p>
             Model probability-based confidence statistics.
@@ -172,7 +182,7 @@
                         {% for key, value in row.items() %}
                         <td>
                             {% if key|lower == "year" %}
-                                {{ "%.0f"|format(value) }}
+                                {{ value|int if value is number else value }}
 
                             {% elif value is number %}
                                 {% if value == value|int %}
@@ -204,9 +214,14 @@
 
     <div class="card p-4">
 
-        <h4 class="section-title">
-            Multi-Temporal Trajectory Analysis
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="section-title mb-0">
+                Multi-Temporal Trajectory Analysis
+            </h4>
+            <a href="/export/csv/trajectories/trajectory_type_summary.csv" class="btn btn-sm btn-outline-primary">
+                Download CSV
+            </a>
+        </div>
 
         <p>
             Classification-derived trajectory types across
@@ -232,7 +247,7 @@
                         {% for key, value in row.items() %}
                         <td>
                             {% if key|lower == "year" %}
-                                {{ "%.0f"|format(value) }}
+                                {{ value|int if value is number else value }}
 
                             {% elif value is number %}
                                 {% if value == value|int %}
@@ -264,9 +279,14 @@
 
     <div class="card p-4">
 
-        <h4 class="section-title">
-            Three-Year Land-Use Trajectory Sequences
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="section-title mb-0">
+                Three-Year Land-Use Trajectory Sequences
+            </h4>
+            <a href="/export/csv/trajectories/trajectory_sequence_summary.csv" class="btn btn-sm btn-outline-primary">
+                Download CSV
+            </a>
+        </div>
 
         <p>
             The most frequent class sequences across 2018, 2022
@@ -312,9 +332,14 @@
 
     <div class="card p-4">
 
-        <h4 class="section-title">
-            Built-up Area Statistics
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="section-title mb-0">
+                Built-up Area Statistics
+            </h4>
+            <a href="/export/csv/builtup/builtup_area_statistics.csv" class="btn btn-sm btn-outline-primary">
+                Download CSV
+            </a>
+        </div>
 
         <div class="table-responsive">
             <table class="table table-striped">
@@ -335,7 +360,7 @@
                         {% for key, value in row.items() %}
                         <td>
                             {% if key|lower == "year" %}
-                                {{ "%.0f"|format(value) }}
+                                {{ value|int if value is number else value }}
 
                             {% elif value is number %}
                                 {% if value == value|int %}
@@ -367,9 +392,14 @@
 
     <div class="card p-4">
 
-        <h4 class="section-title">
-            Agriculture Fragmentation Statistics
-        </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="section-title mb-0">
+                Agriculture Fragmentation Statistics
+            </h4>
+            <a href="/export/csv/agriculture/agriculture_fragmentation_statistics.csv" class="btn btn-sm btn-outline-primary">
+                Download CSV
+            </a>
+        </div>
 
         <div class="table-responsive">
             <table class="table table-striped">
@@ -390,7 +420,7 @@
                         {% for key, value in row.items() %}
                         <td>
                             {% if key|lower == "year" %}
-                                {{ "%.0f"|format(value) }}
+                                {{ value|int if value is number else value }}
 
                             {% elif value is number %}
                                 {% if value == value|int %}
