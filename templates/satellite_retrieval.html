@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Retrieval | Intelligent Land Use Analysis</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+            color: #263238;
+        }
+
+        .navbar, footer {
+            background: #173f4f;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #173f4f, #245e70);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: bold;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            max-width: 760px;
+            margin: auto;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 35px 0 60px 0;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            background: white;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            background: #f8fafb;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: bold;
+            color: #173f4f;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 14px 20px;
+        }
+
+        .btn-cdse {
+            background: #173f4f;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-cdse:hover {
+            background: #245e70;
+            color: white;
+        }
+
+        .badge-coverage {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .badge-cloud-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-cloud-med {
+            background: #fff8e1;
+            color: #f57f17;
+        }
+
+        .badge-cloud-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .log-terminal {
+            background: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        footer {
+            color: white;
+            text-align: center;
+            padding: 22px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Land Use Analysis</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/satellite-retrieval">Satellite Retrieval</a></li>
+                <li class="nav-item"><a class="nav-link" href="/explorer">Land Use Explorer</a></li>
+                <li class="nav-item"><a class="nav-link" href="/change-analysis">Change Analysis</a></li>
+                <li class="nav-item"><a class="nav-link" href="/statistics">Statistics</a></li>
+                <li class="nav-item"><a class="nav-link" href="/ml-model">ML Model</a></li>
+                <li class="nav-item"><a class="nav-link" href="/crop-analysis">Crop Analysis</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1>Automatic Satellite Data Retrieval</h1>
+        <p>
+            Search and retrieve Sentinel-2 Level-2A surface reflectance imagery directly from the
+            Copernicus Data Space Ecosystem (CDSE) for Mangaluru Taluk (Tile 43PDQ).
+        </p>
+    </div>
+</div>
+
+<div class="container content">
+
+    <!-- Credentials Status Banner -->
+    <div class="row">
+        <div class="col-12">
+            {% if credentials_status and credentials_status.is_configured %}
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <i class="bi bi-shield-check fs-4 me-3"></i>
+                <div>
+                    <strong>Copernicus Data Space Authenticated</strong>
+                    <div class="small text-muted">
+                        API credentials detected in environment. Authenticated streaming downloads are enabled.
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>CDSE Credentials Not Configured</strong>
+                    <div class="small">
+                        Public catalogue search is active. To enable automated scene downloads, configure your free
+                        Copernicus Data Space credentials (<code>CDSE_USERNAME</code> and <code>CDSE_PASSWORD</code>) in <code>.env</code>.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Active Job Progress Card (Hidden until job active) -->
+    <div id="jobCard" class="card d-none">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-cloud-arrow-down-fill me-2"></i>Active Retrieval Task</span>
+            <span id="jobStatusBadge" class="badge bg-secondary">Pending</span>
+        </div>
+        <div class="card-body">
+            <h5 id="jobDescription" class="card-title mb-2">Downloading Scene</h5>
+            <p id="jobMessage" class="card-text text-muted small mb-3">Initializing download...</p>
+
+            <div class="progress mb-3" style="height: 22px;">
+                <div id="jobProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                     role="progressbar" style="width: 0%;">0%</div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span id="jobTiming" class="text-muted small">Elapsed: 0s</span>
+                <button id="cancelJobBtn" class="btn btn-sm btn-outline-danger" onclick="cancelActiveJob()">
+                    <i class="bi bi-x-circle me-1"></i>Cancel Download
+                </button>
+            </div>
+
+            <div class="accordion" id="jobLogsAccordion">
+                <div class="accordion-item border-0">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed py-2 px-3 bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#jobLogsCollapse">
+                            <small class="text-muted"><i class="bi bi-terminal me-2"></i>Execution Logs</small>
+                        </button>
+                    </h2>
+                    <div id="jobLogsCollapse" class="accordion-collapse collapse">
+                        <div class="accordion-body p-2">
+                            <div id="jobLogOutput" class="log-terminal">Waiting for log stream...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Filters Form -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-search me-2"></i>Copernicus Sentinel-2 L2A Scene Search
+        </div>
+        <div class="card-body">
+            <form id="searchForm" onsubmit="handleSearch(event)">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Target Study Area</label>
+                        <input type="text" class="form-control" value="Mangaluru Taluk, Karnataka" disabled>
+                        <div class="form-text">EPSG:32643 / Tile 43PDQ</div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="startDate" class="form-label fw-bold">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" required value="2024-01-01">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="endDate" class="form-label fw-bold">End Date</label>
+                        <input type="date" class="form-control" id="endDate" required value="2024-03-31">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="maxCloud" class="form-label fw-bold">
+                            Max Cloud Cover: <span id="cloudValBadge" class="badge bg-secondary">20%</span>
+                        </label>
+                        <input type="range" class="form-range" id="maxCloud" min="0" max="100" step="1" value="20"
+                               oninput="document.getElementById('cloudValBadge').textContent = this.value + '%'">
+                        <div class="form-text">L2A scenes with &le; this cloud %</div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="tileFilter" class="form-label fw-bold">MGRS Tile</label>
+                        <input type="text" class="form-control" id="tileFilter" value="43PDQ" placeholder="43PDQ">
+                        <div class="form-text">Default: 43PDQ</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small">
+                            Queries Copernicus OData Catalog API for Level-2A bottom-of-atmosphere reflectance scenes.
+                        </span>
+                    </div>
+                    <button type="submit" id="searchBtn" class="btn btn-cdse px-4">
+                        <span id="searchSpinner" class="spinner-border spinner-border-sm me-2 d-none" role="status"></span>
+                        <i class="bi bi-search me-1"></i>Search Scenes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results Card -->
+    <div id="resultsCard" class="card d-none">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-images me-2"></i>Available Satellite Scenes (<span id="sceneCount">0</span>)</span>
+            <button id="selectBestBtn" class="btn btn-sm btn-outline-success" onclick="selectBestScene()">
+                <i class="bi bi-star-fill me-1"></i>Select Best Scene
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Acquisition Date</th>
+                            <th>Product Name</th>
+                            <th>Cloud Cover</th>
+                            <th>Taluk Coverage</th>
+                            <th>Size</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scenesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information Card -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-info-circle me-2"></i>About Sentinel-2 L2A Retrieval
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-dark">Data Specifications</h6>
+                    <ul class="text-muted small ps-3">
+                        <li><strong>Sensor:</strong> MSI (MultiSpectral Instrument)</li>
+                        <li><strong>Product Level:</strong> Level-2A (Surface Reflectance)</li>
+                        <li><strong>Tile:</strong> 43PDQ (Mangaluru Taluk)</li>
+                        <li><strong>Atmospheric Correction:</strong> Sen2Cor processor</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-dark">Required Spectral Bands</h6>
+                    <ul class="text-muted small ps-3">
+                        <li><strong>10m Bands:</strong> B02 (Blue), B03 (Green), B04 (Red), B08 (NIR)</li>
+                        <li><strong>20m Bands:</strong> B11 (SWIR-1)</li>
+                        <li><strong>Quality:</strong> SCL (Scene Classification Layer)</li>
+                        <li><strong>Indices:</strong> NDVI, NDWI, NDBI</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-dark">Processing Pipeline</h6>
+                    <ul class="text-muted small ps-3">
+                        <li>Streams archive from CDSE S3 storage node</li>
+                        <li>Safely unpacks to <code>data/raw/&lt;year&gt;/</code></li>
+                        <li>Bilinear resampling for B11 continuous reflectance</li>
+                        <li>Automated background execution with progress tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        Intelligent Land Use Change Analysis &copy; 2026 | Mangaluru Taluk
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let currentScenes = [];
+let activeJobId = null;
+let pollTimer = null;
+
+// Search scenes
+async function handleSearch(event) {
+    event.preventDefault();
+    const btn = document.getElementById('searchBtn');
+    const spinner = document.getElementById('searchSpinner');
+    const resultsCard = document.getElementById('resultsCard');
+    const tableBody = document.getElementById('scenesTableBody');
+    const countSpan = document.getElementById('sceneCount');
+
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const maxCloud = document.getElementById('maxCloud').value;
+    const tile = document.getElementById('tileFilter').value;
+
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    tableBody.innerHTML = '';
+
+    try {
+        const response = await fetch('/api/satellite/search', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                start_date: startDate,
+                end_date: endDate,
+                max_cloud: parseFloat(maxCloud),
+                tile: tile
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            alert('Search failed: ' + (data.error || 'Server error'));
+            return;
+        }
+
+        currentScenes = data.scenes || [];
+        countSpan.textContent = currentScenes.length;
+
+        if (currentScenes.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        No Sentinel-2 L2A scenes found matching the criteria. Try expanding the date range or increasing the cloud cover threshold.
+                    </td>
+                </tr>
+            `;
+        } else {
+            tableBody.innerHTML = currentScenes.map((s, idx) => {
+                let cloudBadgeClass = 'badge-cloud-low';
+                if (s.cloud_cover > 25) cloudBadgeClass = 'badge-cloud-high';
+                else if (s.cloud_cover > 10) cloudBadgeClass = 'badge-cloud-med';
+
+                const isDownloaded = s.already_downloaded;
+                const actionHtml = isDownloaded
+                    ? `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Downloaded</span>`
+                    : `<button class="btn btn-sm btn-cdse" onclick="triggerDownload('${s.id}', '${s.name}', '${s.formatted_date}')">
+                           <i class="bi bi-download me-1"></i>Download
+                       </button>`;
+
+                return `
+                    <tr id="scene-row-${idx}">
+                        <td class="fw-bold">${s.formatted_date || s.date.substring(0, 10)}</td>
+                        <td>
+                            <code class="text-dark small" title="${s.name}">
+                                ${s.name.length > 42 ? s.name.substring(0, 42) + '...' : s.name}
+                            </code>
+                        </td>
+                        <td>
+                            <span class="badge ${cloudBadgeClass}">
+                                ${s.cloud_cover !== null ? s.cloud_cover + '%' : 'N/A'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-coverage">
+                                ${s.coverage_percent}%
+                            </span>
+                        </td>
+                        <td class="text-muted small">${s.size_mb ? s.size_mb + ' MB' : 'N/A'}</td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        resultsCard.classList.remove('d-none');
+        resultsCard.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+        alert('Network error while searching scenes: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+}
+
+// Select the optimal scene
+function selectBestScene() {
+    if (!currentScenes || currentScenes.length === 0) return;
+    const best = currentScenes[0]; // Already sorted by coverage desc, cloud asc
+    triggerDownload(best.id, best.name, best.formatted_date);
+}
+
+// Trigger scene download
+async function triggerDownload(productId, productName, date) {
+    if (!confirm(`Start background retrieval for scene:\n${productName}?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/satellite/download', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                product_id: productId,
+                product_name: productName,
+                date: date
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            alert('Download request rejected: ' + (data.error || 'Unknown error'));
+            return;
+        }
+
+        activeJobId = data.job_id;
+        showJobCard(data.job_id, productName);
+        startJobPolling(data.job_id);
+
+    } catch (err) {
+        alert('Failed to submit download job: ' + err.message);
+    }
+}
+
+// Show job card
+function showJobCard(jobId, productName) {
+    const card = document.getElementById('jobCard');
+    document.getElementById('jobDescription').textContent = `Retrieving: ${productName}`;
+    document.getElementById('jobMessage').textContent = 'Submitting task to background worker...';
+    document.getElementById('jobProgressBar').style.width = '0%';
+    document.getElementById('jobProgressBar').textContent = '0%';
+    document.getElementById('jobStatusBadge').className = 'badge bg-warning text-dark';
+    document.getElementById('jobStatusBadge').textContent = 'Pending';
+    document.getElementById('cancelJobBtn').disabled = false;
+
+    card.classList.remove('d-none');
+    card.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Poll job progress
+function startJobPolling(jobId) {
+    if (pollTimer) clearInterval(pollTimer);
+
+    pollTimer = setInterval(async () => {
+        try {
+            const response = await fetch(`/api/jobs/${jobId}`);
+            if (!response.ok) return;
+
+            const res = await response.json();
+            if (!res.success || !res.job) return;
+
+            const job = res.job;
+            updateJobUI(job);
+
+            if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+        } catch (e) {
+            console.error('Job polling error:', e);
+        }
+    }, 1500);
+}
+
+// Update UI based on job status
+function updateJobUI(job) {
+    const badge = document.getElementById('jobStatusBadge');
+    const msg = document.getElementById('jobMessage');
+    const bar = document.getElementById('jobProgressBar');
+    const timing = document.getElementById('jobTiming');
+    const cancelBtn = document.getElementById('cancelJobBtn');
+    const logOutput = document.getElementById('jobLogOutput');
+
+    const pct = (job.progress !== undefined) ? job.progress : (job.progress_percent || 0);
+    bar.style.width = `${pct}%`;
+    bar.textContent = `${pct}%`;
+    msg.textContent = job.message || job.progress_message || 'Processing...';
+
+    if (job.duration_seconds !== null && job.duration_seconds !== undefined) {
+        timing.textContent = `Duration: ${job.duration_seconds.toFixed(1)}s`;
+    }
+
+    if (job.logs && job.logs.length > 0) {
+        logOutput.textContent = job.logs.join('\n');
+        logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    if (job.status === 'completed') {
+        badge.className = 'badge bg-success';
+        badge.textContent = 'Completed';
+        bar.className = 'progress-bar bg-success';
+        cancelBtn.disabled = true;
+    } else if (job.status === 'running') {
+        badge.className = 'badge bg-primary';
+        badge.textContent = 'Running';
+        bar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-info';
+    } else if (job.status === 'failed') {
+        badge.className = 'badge bg-danger';
+        badge.textContent = 'Failed';
+        bar.className = 'progress-bar bg-danger';
+        cancelBtn.disabled = true;
+        if (job.error) {
+            msg.textContent = 'Error: ' + job.error;
+        }
+    } else if (job.status === 'cancelled') {
+        badge.className = 'badge bg-secondary';
+        badge.textContent = 'Cancelled';
+        bar.className = 'progress-bar bg-secondary';
+        cancelBtn.disabled = true;
+    }
+}
+
+// Cancel active job
+async function cancelActiveJob() {
+    if (!activeJobId) return;
+    if (!confirm('Are you sure you want to cancel this download?')) return;
+
+    try {
+        const response = await fetch(`/api/jobs/${activeJobId}/cancel`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('jobMessage').textContent = 'Cancellation requested...';
+        } else {
+            alert('Cancellation failed: ' + (data.error || 'Server rejected cancellation'));
+        }
+    } catch (e) {
+        alert('Network error requesting cancellation: ' + e.message);
+    }
+}
+</script>
+
+</body>
+</html>

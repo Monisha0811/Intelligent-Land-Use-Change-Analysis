@@ -157,10 +157,40 @@
 </head>
 
 <body>
+    <!-- Top Navigation -->
+    <nav style="background: #173f4f; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white;">
+        <a href="/" style="color: white; font-weight: bold; text-decoration: none; font-size: 18px;">Land Use Analysis</a>
+        <div style="display: flex; gap: 16px; font-size: 14px; flex-wrap: wrap;">
+            <a href="/" style="color: #cfd8dc; text-decoration: none;">Home</a>
+            <a href="/satellite-retrieval" style="color: #cfd8dc; text-decoration: none;">Satellite Retrieval</a>
+            <a href="/explorer" style="color: #cfd8dc; text-decoration: none;">Land Use Explorer</a>
+            <a href="/change-analysis" style="color: #cfd8dc; text-decoration: none;">Change Analysis</a>
+            <a href="/statistics" style="color: #cfd8dc; text-decoration: none;">Statistics</a>
+            <a href="/ml-model" style="color: #cfd8dc; text-decoration: none;">ML Model</a>
+            <a href="/crop-analysis" style="color: white; font-weight: bold; text-decoration: none;">Crop Analysis</a>
+        </div>
+    </nav>
+
     <header>
-        <h1>Experimental Crop Analysis</h1>
-        <p>Intelligent Land Use Change Analysis Using Satellite Data and Machine Learning</p>
-        <p>Mangaluru Taluk, Karnataka | Reference year: 2022</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h1>Experimental Crop Analysis</h1>
+                <p>Intelligent Land Use Change Analysis Using Satellite Data and Machine Learning</p>
+                <p>Mangaluru Taluk, Karnataka | Analysis Year: <strong>{{ selected_year or 2022 }}</strong></p>
+            </div>
+            {% if available_years and available_years|length > 1 %}
+            <div>
+                <form method="GET" action="/crop-analysis" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="yearSelect" style="color: white; font-weight: bold;">Select Year:</label>
+                    <select id="yearSelect" name="year" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: 6px; border: none; font-size: 15px;">
+                        {% for y in available_years %}
+                        <option value="{{ y }}" {% if y|string == selected_year|string %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </header>
 
     <main>
@@ -217,13 +247,13 @@ confidence, not verified classification accuracy.
 
         <div class="map-grid">
             <section class="card">
-                <h3>Predicted crop classes — 2022</h3>
+                <h3>Predicted crop classes — {{ selected_year or 2022 }}</h3>
                <p>Green represents Coconut; orange represents Arecanut; blue represents Paddy, where present in the classification map.</p>
                 <img
                     class="map-image"
-                    src="{{ url_for('crop_map_image') }}"
-                    alt="Experimental crop classification map for Mangaluru in 2022"
-                    onerror="this.onerror=null; this.src='/crop-map-image';"
+                    src="{{ url_for('crop_map_image') }}?year={{ selected_year or 2022 }}"
+                    alt="Experimental crop classification map for Mangaluru in {{ selected_year or 2022 }}"
+                    onerror="this.onerror=null; this.src='/crop-map-image?year=2022';"
                 >
             </section>
 
