@@ -1,0 +1,2 @@
+year,total_valid_pixels,low_pixels,medium_pixels,high_pixels,low_percent,medium_percent,high_percent,mean_confidence,median_confidence,minimum_confidence,maximum_confidence
+2018,3701240,1337599,1348021,1015620,36.139212804357456,36.42079411224346,27.439993083399077,0.6820185780525208,0.6743546724319458,0.2199999988079071,1.0

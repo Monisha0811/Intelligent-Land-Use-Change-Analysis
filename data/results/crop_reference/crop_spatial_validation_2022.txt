@@ -1,0 +1,29 @@
+Spatial Crop Validation - Mangaluru, 2022
+================================================
+Samples after exact duplicate removal: 409
+Approximate spatial block size: 500 metres
+Training samples: 320
+Testing samples: 89
+Training blocks: 27
+Testing blocks: 10
+
+Spatial hold-out accuracy: 0.6404 (64.04%)
+
+Classification report
+------------------------------------------------
+              precision    recall  f1-score   support
+
+     Coconut       0.72      0.90      0.80        49
+    Arecanut       0.64      0.26      0.37        27
+       Paddy       0.35      0.46      0.40        13
+
+    accuracy                           0.64        89
+   macro avg       0.57      0.54      0.52        89
+weighted avg       0.64      0.64      0.61        89
+
+
+Confusion matrix (Coconut, Arecanut, Paddy)
+------------------------------------------------
+[[44  2  3]
+ [12  7  8]
+ [ 5  2  6]]

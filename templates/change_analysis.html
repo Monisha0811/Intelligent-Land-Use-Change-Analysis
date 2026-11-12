@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Change Analysis</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+            color: #263238;
+        }
+
+        .navbar {
+            background: #173f4f;
+        }
+
+        .page-header {
+            background: #173f4f;
+            color: white;
+            padding: 45px 20px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 35px 0;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: #173f4f;
+            font-weight: bold;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .metric h2 {
+            color: #173f4f;
+            font-weight: bold;
+        }
+
+        .table-responsive {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .warning {
+            background: #fff8e1;
+            border-left: 5px solid #f0ad4e;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        footer {
+            background: #173f4f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+
+        <a class="navbar-brand" href="/">
+            Land Use Analysis
+        </a>
+
+        <div class="navbar-nav ms-auto">
+
+            <a class="nav-link" href="/">Home</a>
+
+            <a class="nav-link" href="/explorer">
+                Land Use Explorer
+            </a>
+
+            <a class="nav-link active" href="/change-analysis">
+                Change Analysis
+            </a>
+
+            <a class="nav-link" href="/statistics">
+                Statistics
+            </a>
+
+            <a class="nav-link" href="/ml-model">
+                ML Model
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<div class="page-header">
+
+    <h1>Land Use Change Analysis</h1>
+
+    <p>
+        Temporal transition, intensity, hotspot and reliability analysis
+        for Mangaluru.
+    </p>
+
+</div>
+
+
+<div class="container content">
+
+    <!-- Period selector -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Analysis Period
+        </h4>
+
+        <select class="form-select"
+                onchange="window.location.href='/change-analysis?period=' + this.value">
+
+            {% for period in periods %}
+
+                <option value="{{ period }}"
+                    {% if period == selected_period %}selected{% endif %}>
+
+                    {{ period }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+
+    <!-- Change map -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Detected Change Map
+        </h4>
+
+        <p>
+            Spatial visualization of the selected analysis period.
+        </p>
+
+        <img
+            src="/change-map/{{ selected_period }}"
+            class="img-fluid rounded"
+            alt="Change map"
+            onerror="this.style.display='none'; document.getElementById('mapMessage').style.display='block';"
+        >
+
+        <div id="mapMessage"
+             class="alert alert-secondary"
+             style="display:none;">
+
+            Change map image is not available for this period.
+            The numerical analysis below is still available.
+
+        </div>
+
+    </div>
+
+
+    <!-- Transition analysis -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Land-Use Transitions
+        </h4>
+
+        <p>
+            The table shows classification-derived transitions between
+            land-use classes.
+        </p>
+
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover">
+
+                <thead class="table-dark">
+
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Pixels</th>
+                        <th>Area (km²)</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in transition %}
+
+                    <tr>
+
+                        <td>{{ row["From"] }}</td>
+
+                        <td>{{ row["To"] }}</td>
+
+                        <td>{{ "{:,.0f}".format(row["Pixels"]) }}</td>
+
+                        <td>{{ "%.2f"|format(row["Area_km2"]) }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Change intensity -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Change Intensity
+        </h4>
+
+        <div class="table-responsive">
+
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+
+                    <tr>
+                        <th>Intensity</th>
+                        <th>Description</th>
+                        <th>Percentage</th>
+                        <th>Area (km²)</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in intensity %}
+
+                    <tr>
+
+                        <td>{{ row["Intensity"] }}</td>
+
+                        <td>{{ row["Description"] }}</td>
+
+                        <td>{{ "%.2f"|format(row["Percentage"]) }}%</td>
+
+                        <td>{{ "%.2f"|format(row["Area (km2)"]) }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Hotspot -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Change Hotspots
+        </h4>
+
+        <p>
+            Hotspot classes represent spatial concentration of
+            detected changes.
+        </p>
+
+        <div class="table-responsive">
+
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+
+                    <tr>
+                        <th>Hotspot Class</th>
+                        <th>Class Name</th>
+                        <th>Percentage</th>
+                        <th>Area (km²)</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in hotspot %}
+
+                    <tr>
+
+                        <td>{{ row["Hotspot Class"] }}</td>
+
+                        <td>{{ row["Class Name"] }}</td>
+
+                        <td>{{ "%.2f"|format(row["Percentage"]) }}%</td>
+
+                        <td>{{ "%.2f"|format(row["Area (km2)"]) }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Reliability -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Change Reliability
+        </h4>
+
+        <div class="table-responsive">
+
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+
+                    <tr>
+                        <th>Period</th>
+                        <th>Reliability</th>
+                        <th>Changed Pixels</th>
+                        <th>Percentage</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for row in reliability %}
+
+                    <tr>
+
+                        <td>{{ row["Period"] }}</td>
+
+                        <td>{{ row["Reliability"] }}</td>
+
+                        <td>{{ "{:,.0f}".format(row["Changed Pixels"]) }}</td>
+
+                        <td>{{ "%.2f"|format(row["Percentage"]) }}%</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Research caution -->
+
+    <div class="warning">
+
+        <strong>Interpretation note:</strong>
+
+        The detected transitions represent classification-derived
+        land-use changes. The reliability assessment indicates that
+        many pixel-level transitions have low model confidence.
+        Therefore, these results should be interpreted as candidate
+        changes requiring cautious interpretation rather than
+        independently verified real-world conversions.
+
+    </div>
+
+</div>
+
+
+<footer>
+
+    MCA Main Project |
+    Intelligent Land Use Change Analysis Using Satellite Data and Machine Learning
+
+</footer>
+
+</body>
+</html>

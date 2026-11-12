@@ -1,0 +1,25 @@
+period,transition,direction,pixels,area_km2
+2018-2022,Water -> Agriculture,Expansion,116544,11.6544
+2018-2022,Vegetation/Forest -> Agriculture,Expansion,85486,8.5486
+2018-2022,Built-up -> Agriculture,Expansion,165738,16.573800000000002
+2018-2022,Barren/Open -> Agriculture,Expansion,8530,0.8530000000000001
+2018-2022,Agriculture -> Water,Contraction,104699,10.4699
+2018-2022,Agriculture -> Vegetation/Forest,Contraction,433117,43.3117
+2018-2022,Agriculture -> Built-up,Contraction,168812,16.8812
+2018-2022,Agriculture -> Barren/Open,Contraction,1916,0.19160000000000002
+2022-2025,Water -> Agriculture,Expansion,86364,8.6364
+2022-2025,Vegetation/Forest -> Agriculture,Expansion,443432,44.3432
+2022-2025,Built-up -> Agriculture,Expansion,209984,20.9984
+2022-2025,Barren/Open -> Agriculture,Expansion,1129,0.1129
+2022-2025,Agriculture -> Water,Contraction,189351,18.935100000000002
+2022-2025,Agriculture -> Vegetation/Forest,Contraction,113120,11.312000000000001
+2022-2025,Agriculture -> Built-up,Contraction,53199,5.3199000000000005
+2022-2025,Agriculture -> Barren/Open,Contraction,9933,0.9933000000000001
+2018-2025,Water -> Agriculture,Expansion,147138,14.7138
+2018-2025,Vegetation/Forest -> Agriculture,Expansion,228052,22.805200000000003
+2018-2025,Built-up -> Agriculture,Expansion,215862,21.5862
+2018-2025,Barren/Open -> Agriculture,Expansion,3168,0.3168
+2018-2025,Agriculture -> Water,Contraction,239098,23.9098
+2018-2025,Agriculture -> Vegetation/Forest,Contraction,246033,24.6033
+2018-2025,Agriculture -> Built-up,Contraction,59620,5.962000000000001
+2018-2025,Agriculture -> Barren/Open,Contraction,6414,0.6414000000000001

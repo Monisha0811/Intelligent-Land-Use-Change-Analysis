@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Statistics</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+            color: #263238;
+        }
+
+        .navbar {
+            background: #173f4f;
+        }
+
+        .page-header {
+            background: #173f4f;
+            color: white;
+            padding: 45px 20px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 35px 0;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            color: #173f4f;
+            font-weight: bold;
+        }
+
+        .table-responsive {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        footer {
+            background: #173f4f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+
+        <a class="navbar-brand" href="/">
+            Land Use Analysis
+        </a>
+
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/">Home</a>
+            <a class="nav-link" href="/explorer">Land Use Explorer</a>
+            <a class="nav-link" href="/change-analysis">Change Analysis</a>
+            <a class="nav-link active" href="/statistics">Statistics</a>
+            <a class="nav-link" href="/ml-model">ML Model</a>
+        </div>
+
+    </div>
+</nav>
+
+<div class="page-header">
+    <h1>Land Use Statistics</h1>
+
+    <p>
+        Quantitative summary of the classification and
+        temporal analysis.
+    </p>
+</div>
+
+<div class="container content">
+
+    <!-- LULC Area Statistics -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Land Use / Land Cover Area Statistics
+        </h4>
+
+        <p>
+            Classified area for each land-use category across
+            the study years.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>Year</th>
+                        <th>Class</th>
+                        <th>Pixels</th>
+                        <th>Area (km²)</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in area %}
+                    <tr>
+                        <td>{{ "%.0f"|format(row["Year"]) }}</td>
+                        <td>{{ row["Class_Name"] }}</td>
+                        <td>{{ "{:,.0f}".format(row["Pixels"]) }}</td>
+                        <td>{{ "%.2f"|format(row["Area_km2"]) }}</td>
+                        <td>{{ "%.2f"|format(row["Percentage"]) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- Classification Confidence -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Classification Confidence by Class
+        </h4>
+
+        <p>
+            Model probability-based confidence statistics.
+            Confidence should not be interpreted as classification accuracy.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+                    <tr>
+                        {% if confidence %}
+                            {% for key in confidence[0].keys() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in confidence %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        <td>
+                            {% if key|lower == "year" %}
+                                {{ "%.0f"|format(value) }}
+
+                            {% elif value is number %}
+                                {% if value == value|int %}
+                                    {{ "{:,.0f}".format(value) }}
+                                {% else %}
+                                    {{ "%.4f"|format(value) }}
+                                {% endif %}
+
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10">No confidence statistics available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- Temporal Trajectory Analysis -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Multi-Temporal Trajectory Analysis
+        </h4>
+
+        <p>
+            Classification-derived trajectory types across
+            2018, 2022 and 2025.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+                    <tr>
+                        {% if trajectory %}
+                            {% for key in trajectory[0].keys() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in trajectory %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        <td>
+                            {% if key|lower == "year" %}
+                                {{ "%.0f"|format(value) }}
+
+                            {% elif value is number %}
+                                {% if value == value|int %}
+                                    {{ "{:,.0f}".format(value) }}
+                                {% else %}
+                                    {{ "%.2f"|format(value) }}
+                                {% endif %}
+
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No trajectory analysis results are available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- Three-Year Trajectory Sequences -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Three-Year Land-Use Trajectory Sequences
+        </h4>
+
+        <p>
+            The most frequent class sequences across 2018, 2022
+            and 2025, ranked by pixel count.
+        </p>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>Trajectory Sequence</th>
+                        <th>Pixel Count</th>
+                        <th>Percentage</th>
+                        <th>Area (km²)</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in trajectory_sequences[:20] %}
+                    <tr>
+                        <td>{{ row["Trajectory Sequence"] }}</td>
+                        <td>{{ "{:,.0f}".format(row["Pixel Count"]) }}</td>
+                        <td>{{ "%.2f"|format(row["Percentage"]) }}%</td>
+                        <td>{{ "%.2f"|format(row["Area (km2)"]) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">
+                            No trajectory sequence results are available.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- Built-up Area Statistics -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Built-up Area Statistics
+        </h4>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+                    <tr>
+                        {% if builtup %}
+                            {% for key in builtup[0].keys() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in builtup %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        <td>
+                            {% if key|lower == "year" %}
+                                {{ "%.0f"|format(value) }}
+
+                            {% elif value is number %}
+                                {% if value == value|int %}
+                                    {{ "{:,.0f}".format(value) }}
+                                {% else %}
+                                    {{ "%.4f"|format(value) }}
+                                {% endif %}
+
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No built-up statistics available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- Agriculture Fragmentation Statistics -->
+
+    <div class="card p-4">
+
+        <h4 class="section-title">
+            Agriculture Fragmentation Statistics
+        </h4>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+
+                <thead class="table-dark">
+                    <tr>
+                        {% if agriculture %}
+                            {% for key in agriculture[0].keys() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in agriculture %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        <td>
+                            {% if key|lower == "year" %}
+                                {{ "%.0f"|format(value) }}
+
+                            {% elif value is number %}
+                                {% if value == value|int %}
+                                    {{ "{:,.0f}".format(value) }}
+                                {% else %}
+                                    {{ "%.4f"|format(value) }}
+                                {% endif %}
+
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10">No agriculture statistics available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer>
+    MCA Main Project |
+    Intelligent Land Use Change Analysis Using Satellite Data and Machine Learning
+</footer>
+
+</body>
+</html>

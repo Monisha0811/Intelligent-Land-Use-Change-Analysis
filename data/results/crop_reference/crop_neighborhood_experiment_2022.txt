@@ -1,0 +1,29 @@
+Crop Neighborhood Feature Experiment - Mangaluru, 2022
+==========================================================
+Input samples after exact duplicate removal: 409
+Feature count: 13
+Spatial block size: 500 metres
+Training samples: 320
+Testing samples: 89
+Training blocks: 27
+Testing blocks: 10
+
+Spatial hold-out accuracy: 0.6742 (67.42%)
+
+Classification report
+----------------------------------------------------------
+              precision    recall  f1-score   support
+
+     Coconut       0.71      0.86      0.78        49
+    Arecanut       0.71      0.44      0.55        27
+       Paddy       0.46      0.46      0.46        13
+
+    accuracy                           0.67        89
+   macro avg       0.63      0.59      0.59        89
+weighted avg       0.67      0.67      0.66        89
+
+Confusion matrix (Coconut, Arecanut, Paddy)
+----------------------------------------------------------
+[[42  3  4]
+ [12 12  3]
+ [ 5  2  6]]

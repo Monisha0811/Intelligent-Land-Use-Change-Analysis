@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Land Use Explorer</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background: #173f4f;
+        }
+
+        .page-header {
+            background: #173f4f;
+            color: white;
+            padding: 45px 20px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 40px 0;
+        }
+
+        .map-placeholder {
+            height: 500px;
+            background: #dfe6e9;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 22px;
+        }
+
+        footer {
+            background: #173f4f;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+
+        }
+#map {
+    height: 550px;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+}
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+
+        <a class="navbar-brand" href="/">
+            Land Use Analysis
+        </a>
+
+        <div class="navbar-nav ms-auto">
+
+            <a class="nav-link" href="/">
+                Home
+            </a>
+
+            <a class="nav-link active" href="/explorer">
+                Land Use Explorer
+            </a>
+
+            <a class="nav-link" href="/change-analysis">
+                Change Analysis
+            </a>
+
+            <a class="nav-link" href="/statistics">
+                Statistics
+            </a>
+
+            <a class="nav-link" href="/ml-model">
+                ML Model
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<div class="page-header">
+
+    <h1>Land Use Explorer</h1>
+
+    <p>
+        Explore classified land-use information for Mangaluru
+        across different years.
+    </p>
+
+</div>
+
+
+<div class="container content">
+
+    <div class="card shadow-sm border-0 p-4">
+
+        <h3>Interactive Map</h3>
+
+        <p>
+            The interactive land-use map will be displayed here.
+        </p>
+
+       <div id="map"></div>
+    </div>
+
+</div>
+
+
+<footer>
+    MCA Main Project | Intelligent Land Use Change Analysis
+</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const map = L.map('map').setView([12.9141, 74.8560], 11);
+
+    // Base maps
+    const osm = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            attribution: '&copy; OpenStreetMap contributors'
+        }
+    );
+
+    const satellite = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+            attribution: 'Tiles &copy; Esri'
+        }
+    );
+
+    osm.addTo(map);
+
+    // Common map bounds
+const mapBounds = [
+    [12.828590115819258, 74.78472727840486],
+    [13.04832669346611, 75.01235930428393]
+];
+// Land-use classification overlays
+const classification2018 = L.imageOverlay(
+    '/overlay/2018',
+    mapBounds,
+    {
+        opacity: 0.65
+    }
+);
+
+const classification2022 = L.imageOverlay(
+    '/overlay/2022',
+    mapBounds,
+    {
+        opacity: 0.65
+    }
+);
+
+const classification2025 = L.imageOverlay(
+    '/overlay/2025',
+    mapBounds,
+    {
+        opacity: 0.65
+    }
+);
+
+// Add 2025 as the default classification
+classification2025.addTo(map);
+
+// Base maps
+const baseMaps = {
+    "Street Map": osm,
+    "Satellite": satellite
+};
+
+
+// Confidence overlays
+const confidence2018 = L.imageOverlay(
+    '/confidence-overlay/2018',
+    mapBounds,
+    { opacity: 0.65 }
+);
+
+const confidence2022 = L.imageOverlay(
+    '/confidence-overlay/2022',
+    mapBounds,
+    { opacity: 0.65 }
+);
+
+const confidence2025 = L.imageOverlay(
+    '/confidence-overlay/2025',
+    mapBounds,
+    { opacity: 0.65 }
+);
+
+// Classification and confidence layers
+const overlayMaps = {
+    "Land Use Classification 2018": classification2018,
+    "Land Use Classification 2022": classification2022,
+    "Land Use Classification 2025": classification2025,
+    "Model Confidence 2018": confidence2018,
+    "Model Confidence 2022": confidence2022,
+    "Model Confidence 2025": confidence2025
+};
+
+
+// Layer control
+L.control.layers(baseMaps, overlayMaps).addTo(map);
+// Search control
+const searchControl = L.control({ position: 'topleft' });
+
+searchControl.onAdd = function(map) {
+
+    const div = L.DomUtil.create('div', 'search-control');
+
+    div.innerHTML = `
+        <div style="
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        ">
+            <input
+                id="locationSearch"
+                type="text"
+                placeholder="Search Mangaluru..."
+                style="
+                    width: 220px;
+                    padding: 7px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    outline: none;
+                "
+            >
+
+            <button
+                id="searchButton"
+                style="
+                    margin-left: 5px;
+                    padding: 7px 10px;
+                    border: none;
+                    border-radius: 4px;
+                    background: #173f4f;
+                    color: white;
+                    cursor: pointer;
+                "
+            >
+                Search
+            </button>
+        </div>
+    `;
+
+    L.DomEvent.disableClickPropagation(div);
+
+    return div;
+};
+
+searchControl.addTo(map);
+
+
+// Search location using OpenStreetMap Nominatim
+document.getElementById('searchButton').addEventListener('click', function() {
+
+    const query = document.getElementById('locationSearch').value.trim();
+
+    if (!query) {
+        alert('Please enter a location to search.');
+        return;
+    }
+
+    fetch(
+        'https://nominatim.openstreetmap.org/search?format=json&q=' +
+        encodeURIComponent(query + ', Mangaluru, Karnataka, India')
+    )
+    .then(response => response.json())
+    .then(data => {
+
+        if (data.length === 0) {
+            alert('Location not found.');
+            return;
+        }
+
+        const latitude = parseFloat(data[0].lat);
+        const longitude = parseFloat(data[0].lon);
+
+        map.setView([latitude, longitude], 14);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup(data[0].display_name)
+            .openPopup();
+    })
+    .catch(error => {
+        console.error('Search error:', error);
+        alert('Unable to search for the location.');
+    });
+
+});
+
+ // Dynamic legend
+ const legend = L.control({ position: 'bottomright' });
+
+ legend.onAdd = function(map) {
+     this._div = L.DomUtil.create('div', 'info legend');
+     this.update();
+     return this._div;
+ };
+
+ legend.update = function() {
+     const confidenceActive = [
+         confidence2018,
+         confidence2022,
+         confidence2025
+     ].some(layer => map.hasLayer(layer));
+
+     if (confidenceActive) {
+         this._div.innerHTML = `
+             <div style="
+                 background: white;
+                 padding: 12px;
+                 border-radius: 6px;
+                 box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                 font-size: 14px;
+                 min-width: 200px;
+             ">
+                 <strong>Model Confidence</strong><br>
+                 <small>Probability assigned to the predicted class</small>
+                 <br><br>
+
+                 <div>
+                     <span style="display:inline-block;width:18px;height:18px;background:#dc3737;margin-right:8px;"></span>
+                     Low (&lt;60%)
+                 </div>
+
+                 <div>
+                     <span style="display:inline-block;width:18px;height:18px;background:#ffcd28;margin-right:8px;"></span>
+                     Medium (60–&lt;80%)
+                 </div>
+
+                 <div>
+                     <span style="display:inline-block;width:18px;height:18px;background:#23a04b;margin-right:8px;"></span>
+                     High (≥80%)
+                 </div>
+             </div>
+         `;
+     } else {
+         this._div.innerHTML = `
+             <div style="
+                 background: white;
+                 padding: 12px;
+                 border-radius: 6px;
+                 box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+                 font-size: 14px;
+             ">
+                 <strong>Land Use Classes</strong><br><br>
+
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#1e90ff;margin-right:8px;"></span>Water</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#228b22;margin-right:8px;"></span>Vegetation / Forest</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#ffd700;margin-right:8px;"></span>Agriculture</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#dc3c3c;margin-right:8px;"></span>Built-up</div>
+                 <div><span style="display:inline-block;width:18px;height:18px;background:#a07846;margin-right:8px;"></span>Barren / Open</div>
+             </div>
+         `;
+     }
+ };
+
+ legend.addTo(map);
+
+ map.on('overlayadd overlayremove', function() {
+     legend.update();
+ });
+
+// Opacity control
+const opacityControl = L.control({ position: 'topleft' });
+
+opacityControl.onAdd = function(map) {
+
+    const div = L.DomUtil.create('div', 'opacity-control');
+
+    div.innerHTML = `
+        <div style="
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            width: 220px;
+        ">
+            <strong>Classification Opacity</strong>
+            <br>
+
+            <input
+                id="opacitySlider"
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value="0.65"
+                style="width: 100%;"
+            >
+
+            <div style="text-align:center;">
+                <span id="opacityValue">65%</span>
+            </div>
+        </div>
+    `;
+
+    L.DomEvent.disableClickPropagation(div);
+
+    return div;
+};
+
+opacityControl.addTo(map);
+
+
+// Change opacity of active classification layer
+document.getElementById('opacitySlider').addEventListener('input', function() {
+
+    const opacity = parseFloat(this.value);
+
+    classification2018.setOpacity(opacity);
+    classification2022.setOpacity(opacity);
+    classification2025.setOpacity(opacity);
+
+    document.getElementById('opacityValue').textContent =
+        Math.round(opacity * 100) + '%';
+});
+  
+</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimental Crop Analysis | Mangaluru</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #243247;
+        }
+
+        header {
+            background: #173b35;
+            color: white;
+            padding: 26px 5%;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: 27px;
+        }
+
+        header p {
+            margin: 0;
+            color: #dcebe5;
+            line-height: 1.5;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 28px auto;
+            padding: 0 20px;
+        }
+
+        .notice {
+            background: #fff7df;
+            border-left: 5px solid #d49b20;
+            padding: 16px 18px;
+            border-radius: 6px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            margin: 28px 0 15px;
+            font-size: 21px;
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 3px 12px rgba(25, 45, 65, 0.08);
+            min-width: 0;
+        }
+
+        .card h3 {
+            margin: 0 0 8px;
+        }
+
+        .card p {
+            color: #637083;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .map-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            margin-top: 12px;
+            border: 1px solid #e4e9ef;
+            border-radius: 6px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 13px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e6ebf0;
+        }
+
+        th {
+            background: #edf3f0;
+            color: #173b35;
+        }
+
+        .class-name {
+            font-weight: bold;
+        }
+
+        .coconut {
+            color: #27814a;
+        }
+
+        .arecanut {
+            color: #c46d24;
+        }
+        .paddy {
+    color: #2878b5;
+}
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin: 18px 0;
+        }
+
+        .summary-value {
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px 15px;
+            color: #657184;
+            font-size: 13px;
+        }
+
+        @media (max-width: 760px) {
+            .map-grid, .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Experimental Crop Analysis</h1>
+        <p>Intelligent Land Use Change Analysis Using Satellite Data and Machine Learning</p>
+        <p>Mangaluru Taluk, Karnataka | Reference year: 2022</p>
+    </header>
+
+    <main>
+        <div class="notice">
+            <strong>Important limitation:</strong>
+These are experimental Coconut, Arecanut, and Paddy predictions derived
+from the 2022 satellite imagery. The results have not been independently
+validated across the mapped area. Model probabilities indicate prediction
+confidence, not verified classification accuracy.
+        </div>
+
+        <h2 class="section-title">Crop area summary</h2>
+
+        <div class="summary-grid">
+            <div class="card">
+                <div class="class-name coconut">Coconut</div>
+                <div class="summary-value">
+                    {% for item in crop_stats %}
+                        {% if item.crop_class == "Coconut" %}
+                            {{ "%.2f"|format(item.area_km2|float) }} km²
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <p>Experimental predicted area</p>
+            </div>
+
+            <div class="card">
+                <div class="class-name arecanut">Arecanut</div>
+                <div class="summary-value">
+                    {% for item in crop_stats %}
+                        {% if item.crop_class == "Arecanut" %}
+                            {{ "%.2f"|format(item.area_km2|float) }} km²
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <p>Experimental predicted area</p>
+            </div>
+        </div>
+        
+<div class="card">
+    <div class="class-name paddy">Paddy</div>
+    <div class="summary-value">
+        {% for item in crop_stats %}
+            {% if item.crop_class == "Paddy" %}
+                {{ "%.2f"|format(item.area_km2|float) }} km²
+            {% endif %}
+        {% endfor %}
+    </div>
+    <p>Experimental predicted area</p>
+</div>
+
+
+        <h2 class="section-title">Crop classification map</h2>
+
+        <div class="map-grid">
+            <section class="card">
+                <h3>Predicted crop classes — 2022</h3>
+               <p>Green represents Coconut; orange represents Arecanut; blue represents Paddy, where present in the classification map.</p>
+                <img
+                    class="map-image"
+                    src="{{ url_for('crop_map_image') }}"
+                    alt="Experimental crop classification map for Mangaluru in 2022"
+                    onerror="this.onerror=null; this.src='/crop-map-image';"
+                >
+            </section>
+
+            <section class="card">
+                <h3>Prediction confidence — 2022</h3>
+                <p>Higher values indicate greater model confidence, not confirmed accuracy.</p>
+                <img
+                    class="map-image"
+                    src="/crop-confidence-image"
+                    alt="Experimental crop prediction confidence map for 2022"
+                >
+            </section>
+        </div>
+
+        <h2 class="section-title">Detailed area statistics</h2>
+
+        <div class="card table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Crop class</th>
+                        <th>Pixels</th>
+                        <th>Area (km²)</th>
+                        <th>Share of mapped crop area</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in crop_stats %}
+                    <tr>
+                        <td>{{ item.crop_class }}</td>
+                        <td>{{ "{:,}".format(item.pixels|int) }}</td>
+                        <td>{{ "%.4f"|format(item.area_km2|float) }}</td>
+                        <td>{{ "%.2f"|format(item.percentage_of_mapped_crop_area|float) }}%</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">Crop statistics are not available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        Experimental crop classification using 2022 satellite data.
+        Results should be interpreted with the stated validation limitations.
+    </footer>
+</body>
+</html>
+

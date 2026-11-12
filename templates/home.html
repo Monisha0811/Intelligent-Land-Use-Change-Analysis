@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Land Use Change Analysis</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #263238;
+        }
+
+        .navbar, footer {
+            background: #173f4f;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .hero {
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #173f4f, #245e70);
+            color: white;
+            text-align: center;
+            padding: 65px 20px;
+        }
+
+        .hero h1 {
+            font-size: 46px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 800px;
+            margin: auto;
+            line-height: 1.7;
+        }
+
+        .section {
+            padding: 45px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #173f4f;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card, .content-card, .info-card, .feature-card {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 23px;
+            height: 100%;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        }
+
+        .dashboard-card h3 {
+            color: #173f4f;
+            font-weight: bold;
+        }
+
+        .dashboard-card p {
+            color: #607d8b;
+            margin: 0;
+        }
+
+        .content-card h4, .info-card h4, .feature-card h5 {
+            color: #173f4f;
+            font-weight: bold;
+        }
+
+        .map-container {
+            background: #f8fafb;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .map-container img {
+            width: 100%;
+            height: auto;
+            max-height: 580px;
+            object-fit: contain;
+        }
+
+        .year-card {
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            height: 100%;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        }
+
+        .year {
+            font-size: 30px;
+            font-weight: bold;
+            color: #173f4f;
+        }
+
+        .feature-card {
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover, .info-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 34px;
+            margin-bottom: 12px;
+        }
+
+        .class-number {
+            display: inline-block;
+            background: #e5eff2;
+            color: #173f4f;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        footer {
+            color: white;
+            text-align: center;
+            padding: 22px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 34px; }
+            .hero p { font-size: 16px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Land Use Analysis</a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="/explorer">Land Use Explorer</a></li>
+                <li class="nav-item"><a class="nav-link" href="/change-analysis">Change Analysis</a></li>
+                <li class="nav-item"><a class="nav-link" href="/statistics">Statistics</a></li>
+                <li class="nav-item"><a class="nav-link" href="/ml-model">ML Model</a></li>
+                <li class="nav-item"><a class="nav-link" href="/crop-analysis">Crop Analysis</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <h1>Intelligent Land Use<br>Change Analysis</h1>
+        <p>
+            A satellite-data and machine-learning based system for
+            analyzing land use and land cover changes in Mangaluru Taluk,
+            Karnataka, across multiple years.
+        </p>
+        <a href="/explorer" class="btn btn-light btn-lg mt-4">
+            Explore Land Use Maps
+        </a>
+    </div>
+</section>
+
+<!-- Dashboard Summary -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Project Analysis Dashboard</h2>
+
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="dashboard-card text-center">
+                    <div class="feature-icon">🛰️</div>
+                    <h3>3</h3>
+                    <p>Study Years</p>
+                    <small>2018, 2022 and 2025</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="dashboard-card text-center">
+                    <div class="feature-icon">🌍</div>
+                    <h3>5</h3>
+                    <p>Land Use Classes</p>
+                    <small>Water, Vegetation, Agriculture, Built-up and Barren</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="dashboard-card text-center">
+                    <div class="feature-icon">🤖</div>
+                    <h3>RF</h3>
+                    <p>Classification Model</p>
+                    <small>Random Forest Machine Learning</small>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="dashboard-card text-center">
+                    <div class="feature-icon">📊</div>
+                    <h3>Multi-Year</h3>
+                    <p>Change Analysis</p>
+                    <small>Temporal land use comparison</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map and Statistics -->
+<section class="section bg-light">
+    <div class="container">
+        <h2 class="section-title">Land Use Classification</h2>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="content-card">
+                    <h4>Classified Land Use Map</h4>
+
+                    <div class="mb-3">
+                        <span class="me-2">Select year:</span>
+
+                        {% for year in [2018, 2022, 2025] %}
+                            <a href="/?year={{ year }}#land-use-map"
+                               class="btn btn-sm {% if selected_year == year %}btn-primary{% else %}btn-outline-primary{% endif %} me-2">
+                                {{ year }}
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="map-container">
+                     <img src="{{ url_for('map_image', year=selected_year) }}"
+                             alt="Land use classification map for {{ selected_year }}"
+                             onerror="this.style.display='none'; document.getElementById('map-error').style.display='block';">
+
+                        <p id="map-error" style="display:none; color:#b71c1c; padding:20px;">
+                            Map image could not be displayed. Please open the Land Use Explorer.
+                        </p>
+                    </div>
+
+                    <p class="text-muted mt-3 mb-0">
+                        Classified land use distribution for {{ selected_year }}.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="content-card">
+                    <h4>Area Statistics – {{ selected_year }}</h4>
+
+                    {% if statistics %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Land Use Class</th>
+                                    <th>Area (sq. km)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in statistics %}
+                                <tr>
+                                    <td>
+                                        {{ row.get('Class_Name', row.get('Class', row.get('class_name', ''))) }}
+                                    </td>
+                                    <td>
+                                        {% if row.get('Area_sq_km') is not none %}
+                                            {{ "%.2f"|format(row.get('Area_sq_km')|float) }}
+                                        {% elif row.get('Area_km2') is not none %}
+                                            {{ "%.2f"|format(row.get('Area_km2')|float) }}
+                                        {% elif row.get('Area') is not none %}
+                                            {{ "%.2f"|format(row.get('Area')|float) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">
+                        Area statistics are not available for this year.
+                    </p>
+                    {% endif %}
+
+                    <a href="/statistics" class="btn btn-outline-primary mt-2">
+                        View Detailed Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LULC Classes -->
+<section class="section bg-light" id="land-use-map"></section>
+    <div class="container">
+        <h2 class="section-title">Land Use and Land Cover Classes</h2>
+
+        <div class="row g-4">
+            <div class="col-md">
+                <div class="info-card text-center">
+                    <div class="class-number">01</div>
+                    <h4>Water</h4>
+                    <p class="text-muted mb-0">Water bodies and other water-covered areas.</p>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="info-card text-center">
+                    <div class="class-number">02</div>
+                    <h4>Vegetation / Forest</h4>
+                    <p class="text-muted mb-0">Areas covered by vegetation and forest.</p>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="info-card text-center">
+                    <div class="class-number">03</div>
+                    <h4>Agriculture</h4>
+                    <p class="text-muted mb-0">Agricultural and cultivated land areas.</p>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="info-card text-center">
+                    <div class="class-number">04</div>
+                    <h4>Built-up</h4>
+                    <p class="text-muted mb-0">Buildings and developed land areas.</p>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="info-card text-center">
+                    <div class="class-number">05</div>
+                    <h4>Barren / Open</h4>
+                    <p class="text-muted mb-0">Open land and areas with limited vegetation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Project Overview -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Project Overview</h2>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="content-card">
+                    <h4>About the Project</h4>
+                    <p>
+                        This project analyzes land use and land cover changes
+                        in Mangaluru Taluk using multi-temporal Sentinel-2
+                        satellite imagery and machine learning.
+                    </p>
+                    <p class="mb-0">
+                        Classified maps from 2018, 2022 and 2025 are used
+                        to examine land use distribution and changes across
+                        the study period.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="content-card">
+                    <h4>Analysis Workflow</h4>
+                    <ol class="mb-0">
+                        <li class="mb-2">Satellite data collection and preprocessing</li>
+                        <li class="mb-2">Land use classification using Random Forest</li>
+                        <li class="mb-2">Year-wise classification comparison</li>
+                        <li class="mb-2">Land use transition and change analysis</li>
+                        <li>Statistical and spatial result visualization</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="section bg-light">
+    <div class="container">
+        <h2 class="section-title">System Features</h2>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h5>Land Use Explorer</h5>
+                    <p class="text-muted mb-0">
+                        Explore classified land use maps for different years.
+                    </p>
+                    <a href="/explorer" class="btn btn-sm btn-outline-primary mt-3">
+                        Explore
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h5>Change Analysis</h5>
+                    <p class="text-muted mb-0">
+                        Examine land use transitions between selected years.
+                    </p>
+                    <a href="/change-analysis" class="btn btn-sm btn-outline-primary mt-3">
+                        View Analysis
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h5>Statistics</h5>
+                    <p class="text-muted mb-0">
+                        View area distribution and temporal analysis results.
+                    </p>
+                    <a href="/statistics" class="btn btn-sm btn-outline-primary mt-3">
+                        View Statistics
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h5>ML Model</h5>
+                    <p class="text-muted mb-0">
+                        View information about the classification model.
+                    </p>
+                    <a href="/ml-model" class="btn btn-sm btn-outline-primary mt-3">
+                        View Model
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🌱</div>
+                    <h5>Crop Analysis</h5>
+                    <p class="text-muted mb-0">
+                        Explore the available agriculture and crop analysis.
+                    </p>
+                    <a href="/crop-analysis" class="btn btn-sm btn-outline-primary mt-3">
+                        View Crop Analysis
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h5>Multi-Year Comparison</h5>
+                    <p class="text-muted mb-0">
+                        Compare land use patterns across the three study years.
+                    </p>
+                    <a href="/change-analysis" class="btn btn-sm btn-outline-primary mt-3">
+                        Compare Years
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p class="mb-1">Intelligent Land Use Change Analysis</p>
+    <small>Sentinel-2 Satellite Data | Machine Learning | Mangaluru Taluk</small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

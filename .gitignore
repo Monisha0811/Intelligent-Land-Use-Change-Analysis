@@ -1,10 +1,11 @@
-
-# Python environment
+# Python environments and cache
 venv/
 venv_old/
 .venv/
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.mypy_cache/
 
 # Secrets and local configuration
 .env
@@ -17,15 +18,29 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Original satellite imagery
+data/raw/
+
+# Large full-area satellite rasters
+data/processed/sentinel2_2018.tif
+data/processed/sentinel2_2022.tif
+data/processed/sentinel2_2025.tif
+
+# Large generated reliability detail files
+data/results/reliability/change_details_2018_2022.csv
+data/results/reliability/change_details_2018_2025.csv
+data/results/reliability/change_details_2022_2025.csv
+
+# Duplicate and temporary folders
+data/results/hotspots_backup/
+rasterio_test/
+temp/
+tmp/
+
+# Temporary archives
+app.zip
+
 # Temporary files and logs
 *.log
 *.tmp
 *.bak
-
-# Python test/cache files
-.pytest_cache/
-.mypy_cache/
-
-# Temporary processing outputs
-temp/
-tmp/

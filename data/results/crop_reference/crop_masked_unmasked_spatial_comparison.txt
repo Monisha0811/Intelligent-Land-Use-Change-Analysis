@@ -1,0 +1,16 @@
+Masked vs Unmasked Crop Classification - Spatial Comparison
+==============================================================
+Eligible common spatial splits: 166
+Block size: 500 m
+The same candidate test blocks are used for both datasets.
+Values are mean and standard deviation across eligible splits.
+
+          accuracy           coconut_recall           arecanut_recall           paddy_recall          
+              mean       std           mean       std            mean       std         mean       std
+dataset                                                                                               
+Masked    0.609864  0.089697       0.712007  0.186131        0.519250  0.193264     0.115365  0.198608
+Unmasked  0.606795  0.078669       0.649798  0.148590        0.606759  0.127840     0.012719  0.060185
+
+Caution: this is a diagnostic experiment, not independent ground-truth validation.
+The datasets have different spatial sample coverage and class balance.
+Reference surveys are from 2021; imagery is from December 2022.

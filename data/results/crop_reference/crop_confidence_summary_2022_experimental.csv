@@ -1,0 +1,9 @@
+Metric,Value
+Classified pixels,857790
+Mean maximum class probability,0.6222
+High confidence (>=0.80),150572
+Medium confidence (0.60 to <0.80),263788
+Low confidence (<0.60),443430
+Predicted 1 pixels,446198
+Predicted 2 pixels,335132
+Predicted 3 pixels,76460

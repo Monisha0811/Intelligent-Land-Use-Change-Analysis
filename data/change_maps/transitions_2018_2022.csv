@@ -1,0 +1,26 @@
+From Year,To Year,From Class ID,From Class,To Class ID,To Class,Pixels
+2018,2022,1,Water,1,Water,636394
+2018,2022,1,Water,2,Vegetation/Forest,55453
+2018,2022,1,Water,3,Agriculture,116544
+2018,2022,1,Water,4,Built-up,257467
+2018,2022,1,Water,5,Barren/Open,4939
+2018,2022,2,Vegetation/Forest,1,Water,23028
+2018,2022,2,Vegetation/Forest,2,Vegetation/Forest,537631
+2018,2022,2,Vegetation/Forest,3,Agriculture,85486
+2018,2022,2,Vegetation/Forest,4,Built-up,29938
+2018,2022,2,Vegetation/Forest,5,Barren/Open,1226
+2018,2022,3,Agriculture,1,Water,104699
+2018,2022,3,Agriculture,2,Vegetation/Forest,433117
+2018,2022,3,Agriculture,3,Agriculture,481484
+2018,2022,3,Agriculture,4,Built-up,168812
+2018,2022,3,Agriculture,5,Barren/Open,1916
+2018,2022,4,Built-up,1,Water,196459
+2018,2022,4,Built-up,2,Vegetation/Forest,50845
+2018,2022,4,Built-up,3,Agriculture,165738
+2018,2022,4,Built-up,4,Built-up,301740
+2018,2022,4,Built-up,5,Barren/Open,751
+2018,2022,5,Barren/Open,1,Water,18305
+2018,2022,5,Barren/Open,2,Vegetation/Forest,3664
+2018,2022,5,Barren/Open,3,Agriculture,8530
+2018,2022,5,Barren/Open,4,Built-up,15217
+2018,2022,5,Barren/Open,5,Barren/Open,1857

@@ -1,0 +1,48 @@
+Pooled Spatial Validation - Crop Classification
+=======================================================
+Eligible common spatial splits: 163
+Spatial block size: 500 m
+Note: a point may appear in the test set in more than one split.
+Pooled metrics are repeated-holdout diagnostics, not independent accuracy estimates.
+
+MASKED DATASET
+----------------------------------------
+Pooled test predictions: 17798
+Confusion matrix (rows=actual; columns=predicted)
+Class order: Coconut, Arecanut, Paddy
+[[7371 2386  453]
+ [2244 3418  817]
+ [ 378  515  216]]
+
+              precision    recall  f1-score   support
+
+     Coconut       0.74      0.72      0.73     10210
+    Arecanut       0.54      0.53      0.53      6479
+       Paddy       0.15      0.19      0.17      1109
+
+    accuracy                           0.62     17798
+   macro avg       0.47      0.48      0.48     17798
+weighted avg       0.63      0.62      0.62     17798
+
+Predictions saved: D:\Intelligent_Land_Use_Change_Analysis\data\results\crop_reference\crop_masked_pooled_spatial_predictions.csv
+
+UNMASKED DATASET
+----------------------------------------
+Pooled test predictions: 42499
+Confusion matrix (rows=actual; columns=predicted)
+Class order: Coconut, Arecanut, Paddy
+[[16395  8276  1012]
+ [ 4862  8998  1040]
+ [  721  1171    24]]
+
+              precision    recall  f1-score   support
+
+     Coconut       0.75      0.64      0.69     25683
+    Arecanut       0.49      0.60      0.54     14900
+       Paddy       0.01      0.01      0.01      1916
+
+    accuracy                           0.60     42499
+   macro avg       0.42      0.42      0.41     42499
+weighted avg       0.62      0.60      0.61     42499
+
+Predictions saved: D:\Intelligent_Land_Use_Change_Analysis\data\results\crop_reference\crop_unmasked_pooled_spatial_predictions.csv
