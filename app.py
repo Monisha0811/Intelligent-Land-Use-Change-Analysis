@@ -1,8 +1,9 @@
 ﻿
-from flask import Flask, render_template, request, send_from_directory, send_file
+from flask import Flask, render_template, request, send_from_directory, send_file, jsonify
 
 import os
 import pandas as pd
+from src.job_manager import job_manager
 
 app = Flask(__name__)
 
@@ -426,6 +427,75 @@ def chart_image(filename):
         os.path.join(BASE_DIR, "outputs", "charts"),
         filename
     )
+
+
+# =========================================================
+# Job Management APIs (Asynchronous Tasks)
+# =========================================================
+
+@app.route("/api/health")
+def api_health():
+    """Health check endpoint."""
+    return jsonify({
+        "status": "healthy",
+        "service": "Intelligent Land Use Change Analysis",
+        "timestamp": pd.Timestamp.now().isoformat()
+    })
+
+
+@app.route("/api/jobs")
+def api_list_jobs():
+    """List recent background jobs with optional filtering."""
+    job_type = request.args.get("type")
+    status = request.args.get("status")
+    limit = request.args.get("limit", default=50, type=int)
+
+    jobs = job_manager.list_jobs(job_type=job_type, status=status, limit=limit)
+    return jsonify({
+        "success": True,
+        "count": len(jobs),
+        "jobs": jobs
+    })
+
+
+@app.route("/api/jobs/<job_id>")
+def api_get_job(job_id):
+    """Retrieve detailed progress and status for a specific job."""
+    job = job_manager.get_job(job_id)
+    if not job:
+        return jsonify({
+            "success": False,
+            "error": f"Job '{job_id}' not found."
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "job": job
+    })
+
+
+@app.route("/api/jobs/<job_id>/cancel", methods=["POST"])
+def api_cancel_job(job_id):
+    """Request cancellation of an active or pending background job."""
+    job = job_manager.get_job_object(job_id)
+    if not job:
+        return jsonify({
+            "success": False,
+            "error": f"Job '{job_id}' not found."
+        }), 404
+
+    if job.status in ["completed", "failed"]:
+        return jsonify({
+            "success": False,
+            "error": f"Cannot cancel job '{job_id}' because it has already {job.status}."
+        }), 400
+
+    success = job_manager.cancel_job(job_id)
+    return jsonify({
+        "success": success,
+        "message": f"Cancellation requested for job '{job_id}'."
+    })
+
 
 if __name__ == "__main__":
     app.run(debug=True)
